@@ -61,7 +61,8 @@ public sealed class SuratJalanDocument : IDocument
                 ComposeIntro(col);
 
                 col.Item().PaddingBottom(10);
-                ComposeItemsTable(col);
+                //ComposeItemsTable(col);
+                ComposeItemsMultipageTable(col);
 
                 col.Item().Text("Atas perhatiannya kami ucapkan terima kasih");
 
@@ -201,7 +202,63 @@ public sealed class SuratJalanDocument : IDocument
             table.Cell().Element(CellBorderLRB).Text(string.Empty);
         });
     }
+    private void ComposeItemsMultipageTable(ColumnDescriptor col)
+    {
+        var items = Items ?? [];
 
+        col.Item().Table(table =>
+        {
+            table.ColumnsDefinition(columns =>
+            {
+                columns.ConstantColumn(ColNoWidth);
+                columns.RelativeColumn();
+                columns.ConstantColumn(ColJumlahWidth);
+                columns.ConstantColumn(ColKetWidth);
+                columns.ConstantColumn(ColP1P2Width);
+            });
+
+            // Header akan otomatis muncul lagi di page berikutnya
+            table.Header(header =>
+            {
+                header.Cell().Border(1).AlignCenter().Text("NO").Bold();
+                header.Cell().Border(1).AlignCenter().Text("JENIS & UKURAN BARANG").Bold();
+                header.Cell().Border(1).AlignCenter().Text("JUMLAH").Bold();
+                header.Cell().Border(1).AlignCenter().Text("KET").Bold();
+                header.Cell().Border(1).AlignCenter().Text("P1/P2/SISA").Bold();
+            });
+
+            foreach (var item in items)
+            {
+                table.Cell().Element(CellBorderLR).AlignCenter().Text(item.No.ToString());
+                table.Cell().Element(CellBorderLR).AlignLeft().PaddingLeft(TableCellPaddingLeft).Text(item.NamaBarang);
+                table.Cell().Element(CellBorderLR).AlignRight().PaddingRight(TableCellPaddingLeft).Text(item.Jumlah.ToString());
+                table.Cell().Element(CellBorderLR).AlignCenter().Text(item.Satuan);
+                table.Cell().Element(CellBorderLR).AlignCenter().Text(item.Keterangan);
+            }
+
+            // Footer row (bottom border)
+            table.Cell().Element(CellBorderLRB).Text(string.Empty);
+
+            table.Cell().Element(CellBorderLRB)
+                .PaddingLeft(TableCellPaddingLeft)
+                .AlignLeft()
+                .Text(text =>
+                {
+                    text.Span("Orderan Merchant: ");
+                    text.Span(OrderDesc);
+                    text.Span("\n");
+
+                    text.Span("Expedisi: ").Bold();
+                    text.Span(ExpedisiName).Bold();
+                    text.Span(" Rit: ").Bold();
+                    text.Span(Ritase.ToString()).Bold();
+                });
+
+            table.Cell().Element(CellBorderLRB).Text(string.Empty);
+            table.Cell().Element(CellBorderLRB).Text(string.Empty);
+            table.Cell().Element(CellBorderLRB).Text(string.Empty);
+        });
+    }
     private void ComposeSignatures(ColumnDescriptor col)
     {
         col.Item().Table(table =>
