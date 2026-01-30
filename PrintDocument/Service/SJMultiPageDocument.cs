@@ -51,22 +51,26 @@ namespace PrintDocument.Service
         public void Compose(IDocumentContainer container)
         {
             var items = Items ?? [];
+            var pages = Chunk(items, RowsPerPage);
 
-            container.Page(page =>
+            foreach (var pageItems in pages)
             {
-                page.Size(Cm(21, 14));
-                page.Margin(PageMargin);
-                page.DefaultTextStyle(x => x.FontSize(DefaultFontSize));
+                container.Page(page =>
+                {
+                    page.Size(Cm(21, 14));
+                    page.Margin(PageMargin);
+                    page.DefaultTextStyle(x => x.FontSize(DefaultFontSize));
 
-                page.Header().Element(ComposeHeaderContainer);
+                    // Header sama setiap halaman (kalau kamu mau)
+                    page.Header().Element(ComposeHeaderContainer);
 
                 // table auto-break pages
                 page.Content().PaddingTop(8).Element(c => ComposeContent(c, items));
 
                 // footer (signatures) akan muncul di setiap halaman
-                page.Footer().Element(ComposeSignaturesContainer);
-            });
-        }
+                    page.Footer().Element(ComposeSignaturesContainer);
+                });
+            }
 
         private void ComposeContent(IContainer container, IReadOnlyList<SuratJalanItem> items)
         {
